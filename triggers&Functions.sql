@@ -1,233 +1,179 @@
-delimiter \\
+CREATE FUNCTION check_seat_available (FID int,cl enum('Business','FirstClass','Economy'))
+    RETURNS INT
+    RETURN (SELECT COUNT(*) FROM Seat WHERE ID NOT IN (SELECT SeatID FROM Ticket WHERE FligthID=FID) and Class=cl and PlaneId=(SELECT PlaneID FROM Scheduled_flight WHERE ID=FID)); 
 
-create trigger check_Employee_phone_Number
-before insert on Employees
-for each row
-begin
-if (!Valid_Phone_Number(new.PhoneNo))
-then 
-begin 
-SIGNAL SQLSTATE VALUE '45000'
-SET MESSAGE_TEXT = 'Please enter a valid phone number';
-end;
-end if;
-end;
-//
 
-create trigger check_Customer_phone_Number
-before insert on CustomerProfiles
-for each row
-begin
-if (!Valid_Phone_Number(new.PhoneNo))
-then 
-begin 
-SIGNAL SQLSTATE VALUE '45000'
-SET MESSAGE_TEXT = 'Please enter a valid phone number';
-end;
-end if;
-end;
-//
+CREATE PROCEDURE show_flights(IN src int, IN dst int,IN fromDate date,IN toDate date)
+ BEGIN 
+  IF ((fromDate IS NULL) AND (toDate IS NULL)) THEN SELECT * FROM Scheduled_flight WHERE Start=src AND Dest = dst;
+  ELSEIF (toDate IS NOT NULL) THEN SELECT * FROM Scheduled_flight WHERE Start=src AND Dest = dst AND TOD<= toDate;
+  ELSEIF (fromDate IS NOT NULL) THEN SELECT * FROM Scheduled_flight WHERE Start=src AND Dest = dst AND TOD>= fromDate;
+  ELSE SELECT * FROM Scheduled_flight WHERE Start=src AND Dest = dst AND TOD<= toDate AND TOD>=fromDate; 
+  END IF; 
+ END;
+ //
 
-create function Valid_Phone(int phNo)
+
+delimiter //
+create function Valid_Phone_Number(phNo varchar(15))
 returns bool
 deterministic
 begin
-declare @Validity = bool;
+declare Validity bool;
 if phNo NOT RLIKE '^(\\+?[0-9]{1,3})?[0-9]{10}$' then
-set @Validity = True;
+set Validity = False;
 else
-set @Validity = False;
+set Validity = True;
 end if;
-return True;
+return Validity;
 end;
 //
+delimiter ;
 
-create trigger CargoLimit 
-before insert on Cargo
-for each row
-begin
-set @TotalWeight = select sum(Weight) from Cargo where flightID = new.flightID;
-set @TotalWeight = @TotalWeight + new.Weight;
-set @Cargolimit = select CargoLimit from Model where ID = (select Model from Planes, ScheduledFlights where Planes.ID = ScheduledFlights.PlaneID and ScheduledFlights.ID = new.flightID);
-if @TotalWeight > @Cargolimit
-then
-begin
-SIGNAL SQLSTATE. '45000'
-SET MESSAGE_TEXT = 'Cargo Limit exceeded';
-end;
-end if;
-end;
-//
-
-create trigger check_Customer_Password
-before insert on CustomerProfiles
-for each row
-begin
-set @Validity = Valid_Password(new.Password)
-case @Validity
-when then begin 
-SIGNAL SQLSTATE VALUE '45000'
-SET MESSAGE_TEXT = 'Please enter a password having a special character';
-end;
-when then begin 
-SIGNAL SQLSTATE VALUE '45000'
-SET MESSAGE_TEXT = 'Please enter a password having a number';
-end;
-else begin 
-SIGNAL SQLSTATE VALUE '45000'
-SET MESSAGE_TEXT = CONCAT('Please enter a password of length', @Validity);
-end;
-end case;
-end;
-//
-
-create function Valid_Password(int passwd)
+delimiter //
+create function Valid_Password(passwd varchar(30))
 returns int
 deterministic
 begin
-declare @Validity = int;
-if phNo NOT RLIKE '^(\\+?[0-9]{1,3})?[0-9]{10}$' then
-set @Validity = True;
-else
-set @Validity = False;
+set  @MinLength = 8;
+set  @Validity = 0;
+if char_length(passwd) <  MinLength then
+set  @Validity =  MinLength;
+elseif passwd NOT LIKE '%[0-9]%' then
+set  @Validity = 1;
 end if;
-return True;
-end;
+return  @Validity;
+end;//
+delimiter ;
 
-
-#create function LimitExceeded(int wt)
-#returns int
-#deterministic
-#begin
-#set @TotalWeight = select sum(Weight) from Cargo where flightID = new.flightID;
-#set @TotalWeight = @TotalWeight + new.Weight;
-#set @Cargolimit = select CargoLimit from Model where ID = (select Model from Planes, ScheduledFlights where Planes.ID = ScheduledFlights.PlaneID and ScheduledFlights.ID = new.flightID);
-#set @validity = bool;
-#if @TotalWeight > @Cargolimit
-#then set @validity = True;
-#else
-#set @validity = False;
-#end if;
-#return @validity;
-#end;
-#//
 
 SELECT DATEDIFF(Date1, Date2); 
 
-create function distance_between_airports (fromPort int, toPort  int)
-	returns int
-	deterministic
-	begin
-	set @fromLat = select latitude from airports where ID = fromPort;
-	set @fromLon = select longitude from airports where ID = fromPort;
-	set @toLat = select latitude from airports where ID = toPort;
-	set @toLon = select longitude from airports where ID = toPort;
+delimiter //
+create function distance_between_Airport (fromPort int, toPort  int)
+  returns int
+  deterministic
+  begin
+  set  @fromLat = (select Latitude from Airport where ID = fromPort);
+  set  @fromLon = (select Longitude from Airport where ID = fromPort);
+  set  @toLat = (select Latitude from Airport where ID = toPort);
+  set  @toLon = (select Longitude from Airport where ID = toPort);
 
-	set @fromLat = case 
-					when @fromLat < 0 then Radians(90 + @fromLat)
-					else Radians(@fromLat)
-				   end;
+  set  @fromLat = case 
+          when  @fromLat < 0 then Radians(90 +  @fromLat)
+          else Radians( @fromLat)
+           end;
 
-	set @fromLong = case 
-					when @fromLong < 0 then Radians(360 + @fromLong)
-					else Radians(@fromLong)
-				   end;
+  set  @fromLong = case 
+          when  @fromLong < 0 then Radians(360 +  @fromLong)
+          else Radians( @fromLong)
+           end;
 
-	set @toLat = case 
-					when @toLat < 0 then Radians(90 + @toLat)
-					else Radians(@toLat)
-				   end;
+  set  @toLat = case 
+          when  @toLat < 0 then Radians(90 +  @toLat)
+          else Radians( @toLat)
+           end;
 
-	set @toLong = case 
-					when @toLong < 0 then Radians(360 + @toLong)
-					else Radians(@toLong)
-				   end;
+  set  @toLong = case 
+          when  @toLong < 0 then Radians(360 +  @toLong)
+          else Radians( @toLong)
+           end;
 
-	set @a = pow(sin((@fromLat - @toLat) / 2), 2) + cos(@fromLat) * cos(@toLat) * pow(sin((@fromLong - @toLong) / 2), 2);
-	set @c = 2 * atan2(sqrt(@a), sqrt(1 - @a));
+  set  @a = pow(sin(( @fromLat -  @toLat) / 2), 2) + cos( @fromLat) * cos( @toLat) * pow(sin(( @fromLong -  @toLong) / 2), 2);
+  set  @c = 2 * atan2(sqrt( @a), sqrt(1 -  @a));
 
-	return (6,371 * @c);
-	end;
+  return (6,371 *  @c);
+  end; //
 
+delimiter ;
+
+delimiter //
 create procedure Holiday_bonus (in percent int)
-	begin
-	create or replace view holiday_bonus
-	as select ID as EmployeeID, (Salary * percent / 100) as Bonus
-	from Employees;
-	end;
+  begin
+  create or replace view holiday_bonus
+  as (select (ID as EmployeeID), ((Salary * percent / 100) as Bonus)
+  from Employee);
+  end;//
+delimiter ;
 
-create procedure Get_seat_list (in flightID int)
-	begin 
-	set @planeID = select PlaneID from ScheduledFlights where ID = flightID;
-	create temporary table Business_Seats select seatNo from Seats where ID not in (select SeatID from Tickets where Tickets.flightID = flightID and Status = 'Active') and class = 'Business'
-	create temporary table FirstClass_Seats select seatNo from Seats where ID not in (select SeatID from Tickets where Tickets.flightID = flightID and Status = 'Active') and class = 'FirstClass'
-	create temporary table Economy_Seats select seatNo from Seats where ID not in (select SeatID from Tickets where Tickets.flightID = flightID and Status = 'Active') and class = 'Economy'
-	end;
+delimiter //
+create procedure Get_seat_list (in FligthID int)
+  begin 
+  declare PlaneId int;
+  set PlaneID = (select PlaneID from Scheduled_flight where ID = FligthID);
+  create temporary table Business_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FligthID = FligthID and Status = 'Active') and Class = 'Business';
+  create temporary table FirstClass_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FligthID = FligthID and Status = 'Active') and Class = 'FirstClass';
+  create temporary table Economy_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FligthID = FligthID and Status = 'Active') and Class = 'Economy';
+  end;//
+delimiter ;
 
+delimiter //
 create procedure Show_eligible_loyalty_programs (in customerID int)
-	begin 
-	set @milesTravelled = select milesTravelled from CustomerProfiles where ID = customerID;
-	create temporary table Eligible_programs select * from loyaltyType where @milesTravelled >= minimumMiles;
-	end;
+  begin 
+  set @milesTravelled = (select MilesTravelled from Customer_profile where ID = customerID);
+  create temporary table Eligible_programs select * from Loyalty_type where @milesTravelled >= MinimumMiles;
+  end;//
+delimiter ;
 
-create procedure distance_travelled_since_last_inspection (in planeID int)
-	begin
-	set@lastInspectionDate = select max(Date) from Inspection where PlaneID = planeID;
-	
-	return (with distances_travelled as ( 
-			select distance_between_airports(ScheduledFlights.Start, ScheduledFlights.Dest) as distance
-			from ScheduledFlights, Doneflights
-			where ScheduledFlights.ID = Doneflights.ID and Doneflights.DOA >= @lastInspectionDate and ScheduledFlights.PlaneID = planeID;
-		   )
-		   select sum(distance)
-		   from distances_travelled);
+delimiter //
+create procedure distance_travelled_since_last_inspection (in PlaneID int)
+  begin
+  set@lastInspectionDate = (select max(Date) from Inspection where PlaneID = PlaneID);
+  
+  return (with distances_travelled as ( 
+      select distance_between_Airport(Scheduled_flight.Start, Scheduled_flight.Dest) as distance
+      from Scheduled_flight, Commenced_flight
+      where Scheduled_flight.ID = Commenced_flight.ID and Commenced_flight.DOA >= @lastInspectionDate and Scheduled_flight.PlaneID = PlaneID;
+       )
+       select sum(distance)
+       from distances_travelled);
+  end; //
+delimiter ;
 
+delimiter //
 create procedure Cancel_booking (in ticketID int)
-	begin
-	set @customerID = select customerID from Booking where ID in (select BookingID from Tickets where ID = ticketID);
-	update Tickets
-	set Status = 'Cancelled'
-	where ID = ticketID;
-	set @ticketPrice = case (select class from Seats, Tickets where Seats.ID = Ticket.seatID and Ticket.ID = ticketID)
-						when 'FirstClass' then 10000
-						when 'Business' then 5000
-						when 'Economy' then 1000 
-						end;
+  begin
+  set @customerID = (select CustomerID from Booking where ID in (select BookingID from Ticket where ID = ticketID));
+  update Ticket
+  set Status = 'Cancelled'
+  where ID = ticketID;
+  set @ticketPrice = (select Price from Ticket where ID = ticketID);
 
-	insert into Payments (Amount, cash, Bank, transactionID, timeStamp)
-	values (@ticketPrice * 0.8,'N', 'National Bank of Poor People', 98989898, CURRENT_TIMESTAMP());
+  insert into Payment (Amount, Cash, Bank, TransactionID, TimeStamp)
+  values (@ticketPrice * 0.8,'N', 'National Bank of Poor People', 98989898, CURRENT_TIMESTAMP());
 
-	end;
+  end;//
+delimiter ;
 
+delimiter //
 create procedure Cancel_Cargo (in cargoID int)
-	begin
-	set @customerID = select customerID from Booking where ID in (select BookingID from Cargo where ID = cargoID);
-	
-	set @cargoPrice = select Amount from Payments, Bookings, Cargo where Payments.ID = Bookings.paymentsID and Booking.ID = Cargo.BookingID;
+  begin
+  declare customerID int;
+  set customerID = (select CustomerID from Booking where ID in (select BookingID from Cargo where ID = cargoID));
+  
+  set @cargoPrice = (select Amount from Payment, Booking, Cargo where Payment.ID = Booking.PaymentID and Booking.ID = Cargo.BookingID);
 
-	insert into Payments (Amount, cash, Bank, transactionID, timeStamp)
-	values (@cargoPrice * 0.8,'N', 'National Bank of Poor People', 98989898, CURRENT_TIMESTAMP());
+  insert into Payment (Amount, Cash, Bank, TransactionID, TimeStamp)
+  values (@cargoPrice * 0.8,'N', 'National Bank of Poor People', 98989898, CURRENT_TIMESTAMP());
 
-	end;
+  delete from Cargo where ID = cargoID;
 
-create procedure Income_expenditure (out Income float, out expediture float, in fromDate date, in toDate date, in type varchar(50) )
-	begin
-	if type = '' then
-	begin
-		select sum(amount) into income from Payments where amount > 0 and date(timeStamp) betweem fromDate and toDate;
-		select sum(amount) into expediture from Payments where amount < 0 and date(timeStamp) betweem fromDate and toDate;
-	end;
-	else
-	begin
-		select sum(amount) into income from Payments where amount > 0 and date(timeStamp) betweem fromDate and toDate and description = type;
-		select sum(amount) into expediture from Payments where amount < 0 and date(timeStamp) betweem fromDate and toDate and description = type;
-	end;
-	end if;
-	end;
+  end;//
+delimiter ;
 
-
-
-
-
-
-
+delimiter //
+create procedure Income_expenditure (out income float, out expediture float, in fromDate date, in toDate date, in type varchar(30))
+  begin
+  if type = '' then
+  begin
+    select sum(Amount) into income from Payment where Amount > 0 and date(TimeStamp) between fromDate and toDate;
+    select sum(Amount) into expediture from Payment where Amount < 0 and date(TimeStamp) between fromDate and toDate;
+  end;
+  else
+  begin
+    select sum(Amount) into income from Payment where Amount > 0 and date(TimeStamp) between fromDate and toDate and Description = type;
+    select sum(Amount) into expediture from Payment where Amount < 0 and date(TimeStamp) between fromDate and toDate and Description = type;
+  end;
+  end if;
+  end;//
+delimiter ;
