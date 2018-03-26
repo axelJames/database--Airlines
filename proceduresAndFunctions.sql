@@ -1,19 +1,24 @@
-CREATE FUNCTION check_seat_available (FID int,cl enum('Business','FirstClass','Economy'))
+
+/*tested and working*/
+CREATE FUNCTION check_seat_availability (FID int,cl enum('Business','FirstClass','Economy'))
     RETURNS INT
     RETURN (SELECT COUNT(*) FROM Seat WHERE ID NOT IN (SELECT SeatID FROM Ticket WHERE FlightID=FID) and Class=cl and PlaneId=(SELECT PlaneID FROM Scheduled_flight WHERE ID=FID)); 
 
 
+/*tested and working*/
+delimiter //
 CREATE PROCEDURE show_flights(IN src int, IN dst int,IN fromDate date,IN toDate date)
  BEGIN 
   IF ((fromDate IS NULL) AND (toDate IS NULL)) THEN SELECT * FROM Scheduled_flight WHERE Start=src AND Dest = dst;
-  ELSEIF (toDate IS NOT NULL) THEN SELECT * FROM Scheduled_flight WHERE Start=src AND Dest = dst AND TOD<= toDate;
-  ELSEIF (fromDate IS NOT NULL) THEN SELECT * FROM Scheduled_flight WHERE Start=src AND Dest = dst AND TOD>= fromDate;
+  ELSEIF ((toDate IS NOT NULL) and (fromDate IS NULL)) THEN SELECT * FROM Scheduled_flight WHERE Start=src AND Dest = dst AND DOD<= toDate;
+  ELSEIF ((toDate IS NULL) and (fromDate IS NOT NULL)) THEN SELECT * FROM Scheduled_flight WHERE Start=src AND Dest = dst AND DOD>= fromDate;
   ELSE SELECT * FROM Scheduled_flight WHERE Start=src AND Dest = dst AND TOD<= toDate AND TOD>=fromDate; 
   END IF; 
  END;
  //
+delimiter ;
 
-
+/*tested and working*/
 delimiter //
 create function Valid_Phone_Number(phNo varchar(15))
 returns bool
@@ -30,24 +35,25 @@ end;
 //
 delimiter ;
 
+/*tested and kinda working*/
 delimiter //
 create function Valid_Password(passwd varchar(30))
 returns int
 deterministic
 begin
-set  @MinLength = 8;
-set  @Validity = 0;
+declare Validity bool;
+declare MinLength int;
+set  MinLength = 8;
+set  Validity = 0;
 if char_length(passwd) <  MinLength then
-set  @Validity =  MinLength;
+set  Validity =  MinLength;
 elseif passwd NOT LIKE '%[0-9]%' then
-set  @Validity = 1;
+set  Validity = 1;
 end if;
-return  @Validity;
+return  Validity;
 end;//
 delimiter ;
 
-
-SELECT DATEDIFF(Date1, Date2); 
 
 delimiter //
 create function distance_between_Airport (fromPort int, toPort  int)
