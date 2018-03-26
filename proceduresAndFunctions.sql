@@ -116,27 +116,28 @@ create procedure Get_seat_list (in FlightID int)
   end;//
 delimiter ;
 
-
+/*tested and working*/
 delimiter //
 create procedure Show_eligible_loyalty_programs (in customerID int)
   begin 
   set @milesTravelled = (select MilesTravelled from Customer_profile where ID = customerID);
-  create temporary table Eligible_programs select * from Loyalty_type where @milesTravelled >= MinimumMiles;
+  create or replace temporary table Eligible_programs select * from Loyalty_type where @milesTravelled >= MinimumMiles;
   end;//
 delimiter ;
 
+/* with not supported*/
 delimiter //
-create procedure distance_travelled_since_last_inspection (in PlaneID int)
+create procedure distance_travelled_since_last_inspection (in PlaneID int,out dist int)
   begin
-  set@lastInspectionDate = (select max(Date) from Inspection where PlaneID = PlaneID);
+  set @lastInspectionDate = (select max(Date) from Inspection where PlaneID = PlaneID);
   
-  return (with distances_travelled as ( 
+  with distances_travelled as ( 
       select distance_between_Airport(Scheduled_flight.Start, Scheduled_flight.Dest) as distance
       from Scheduled_flight, Commenced_flight
       where Scheduled_flight.ID = Commenced_flight.ID and Commenced_flight.DOA >= @lastInspectionDate and Scheduled_flight.PlaneID = PlaneID;
        )
-       select sum(distance)
-       from distances_travelled);
+       select sum(distance) into dist 
+       from distances_travelled;
   end; //
 delimiter ;
 
@@ -155,13 +156,14 @@ create procedure Cancel_booking (in ticketID int)
   end;//
 delimiter ;
 
+/*tested and working*/
 delimiter //
 create procedure Cancel_Cargo (in cargoID int)
   begin
   declare customerID int;
   set customerID = (select CustomerID from Booking where ID in (select BookingID from Cargo where ID = cargoID));
   
-  set @cargoPrice = (select Amount from Payment, Booking, Cargo where Payment.ID = Booking.PaymentID and Booking.ID = Cargo.BookingID);
+  set @cargoPrice = -1 * (select Amount from Payment, Booking, Cargo where Payment.ID = Booking.PaymentID and Booking.ID = Cargo.BookingID);
 
   insert into Payment (Amount, Cash, Bank, TransactionID, TimeStamp)
   values (@cargoPrice * 0.8,'N', 'National Bank of Poor People', 98989898, CURRENT_TIMESTAMP());
@@ -171,6 +173,7 @@ create procedure Cancel_Cargo (in cargoID int)
   end;//
 delimiter ;
 
+/*tested and working*/
 delimiter //
 create procedure Income_expenditure (out income float, out expediture float, in fromDate date, in toDate date, in type varchar(30))
   begin
