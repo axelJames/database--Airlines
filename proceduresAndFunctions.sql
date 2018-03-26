@@ -55,15 +55,16 @@ end;//
 delimiter ;
 
 
+/*tested and working*/
 delimiter //
 create function distance_between_Airport (fromPort int, toPort  int)
   returns int
   deterministic
   begin
   set  @fromLat = (select Latitude from Airport where ID = fromPort);
-  set  @fromLon = (select Longitude from Airport where ID = fromPort);
+  set  @fromLong = (select Longitude from Airport where ID = fromPort);
   set  @toLat = (select Latitude from Airport where ID = toPort);
-  set  @toLon = (select Longitude from Airport where ID = toPort);
+  set  @toLong = (select Longitude from Airport where ID = toPort);
 
   set  @fromLat = case 
           when  @fromLat < 0 then Radians(90 +  @fromLat)
@@ -88,19 +89,21 @@ create function distance_between_Airport (fromPort int, toPort  int)
   set  @a = pow(sin(( @fromLat -  @toLat) / 2), 2) + cos( @fromLat) * cos( @toLat) * pow(sin(( @fromLong -  @toLong) / 2), 2);
   set  @c = 2 * atan2(sqrt( @a), sqrt(1 -  @a));
 
-  return (6,371 *  @c);
+  return (6371 *  @c);
   end; //
 
 delimiter ;
 
+/*tested and kinda working*/
 delimiter //
 create procedure Holiday_bonus (in percent int)
   begin
-  create or replace view holiday_bonus
-  as (select (ID as EmployeeID), ((Salary * percent / 100) as Bonus)
-  from Employee);
+  create or replace table holiday_bonus as select ID as EmployeeID, (Salary / 100) as Bonus
+  from Employee;
+  update holiday_bonus set Bonus = Bonus *percent; 
   end;//
 delimiter ;
+
 
 delimiter //
 create procedure Get_seat_list (in FlightID int)
@@ -112,6 +115,7 @@ create procedure Get_seat_list (in FlightID int)
   create temporary table Economy_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FlightID = FlightID and Status = 'Active') and Class = 'Economy';
   end;//
 delimiter ;
+
 
 delimiter //
 create procedure Show_eligible_loyalty_programs (in customerID int)
