@@ -1,6 +1,6 @@
 CREATE FUNCTION check_seat_available (FID int,cl enum('Business','FirstClass','Economy'))
     RETURNS INT
-    RETURN (SELECT COUNT(*) FROM Seat WHERE ID NOT IN (SELECT SeatID FROM Ticket WHERE FligthID=FID) and Class=cl and PlaneId=(SELECT PlaneID FROM Scheduled_flight WHERE ID=FID)); 
+    RETURN (SELECT COUNT(*) FROM Seat WHERE ID NOT IN (SELECT SeatID FROM Ticket WHERE FlightID=FID) and Class=cl and PlaneId=(SELECT PlaneID FROM Scheduled_flight WHERE ID=FID)); 
 
 
 CREATE PROCEDURE show_flights(IN src int, IN dst int,IN fromDate date,IN toDate date)
@@ -97,13 +97,13 @@ create procedure Holiday_bonus (in percent int)
 delimiter ;
 
 delimiter //
-create procedure Get_seat_list (in FligthID int)
+create procedure Get_seat_list (in FlightID int)
   begin 
   declare PlaneId int;
-  set PlaneID = (select PlaneID from Scheduled_flight where ID = FligthID);
-  create temporary table Business_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FligthID = FligthID and Status = 'Active') and Class = 'Business';
-  create temporary table FirstClass_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FligthID = FligthID and Status = 'Active') and Class = 'FirstClass';
-  create temporary table Economy_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FligthID = FligthID and Status = 'Active') and Class = 'Economy';
+  set PlaneID = (select PlaneID from Scheduled_flight where ID = FlightID);
+  create temporary table Business_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FlightID = FlightID and Status = 'Active') and Class = 'Business';
+  create temporary table FirstClass_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FlightID = FlightID and Status = 'Active') and Class = 'FirstClass';
+  create temporary table Economy_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FlightID = FlightID and Status = 'Active') and Class = 'Economy';
   end;//
 delimiter ;
 

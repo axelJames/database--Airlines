@@ -1,4 +1,4 @@
-create database Airlines;
+create or replace database Airlines;
 use Airlines;
 create table Employee(
                         ID         int auto_increment  not null,

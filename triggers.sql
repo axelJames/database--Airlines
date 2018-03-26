@@ -1,39 +1,25 @@
-
-DELIMITER //
-CREATE TRIGGER bi_user
-  BEFORE INSERT ON user
-  FOR EACH ROW
-BEGIN
-  IF NEW.email NOT LIKE '_%@_%.__%' THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Email field is not valid';
-  END IF;
-END; //
-UPDATE animal_count SET animal_count.animals = animal_count.animals+1;
-DELIMITER ;
------------------------------------------------------------------------
-
 DELIMITER //
 CREATE TRIGGER lat_long_check 
-BEFORE INSERT ON airports 
+BEFORE INSERT ON Airport 
 FOR EACH ROW 
 BEGIN 
- IF ((NEW.latitude <(-90.0)) or (NEW.latitude>90.0) or (NEW.longitude<(-180.0))  or (NEW.longitude>180.0)) THEN 
-SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid lattitude or longitude';
+ IF ((NEW.Latitude <(-90.0)) or (NEW.Latitude>90.0) or (NEW.Longitude<(-180.0))  or (NEW.Longitude>180.0)) THEN 
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid Laitude or Longitude';
   END IF;
 END; //
 
 CREATE TRIGGER change_total_distance 
-AFTER UPDATE ON StartedFlights  
+AFTER UPDATE ON Commenced_flight  
 FOR EACH ROW 
 BEGIN 
-DECLARE @start int;
-DECLARE @dest int;
-DECLARE @dist int; 
+DECLARE start int;
+DECLARE dest int;
+DECLARE dist int; 
 IF NEW.TOA IS NOT NULL THEN 
-SET @start = SELECT Start FROM ScheduledFlights WHERE ID= NEW.ID;
-SET @dest = SELECT Dest FROM ScheduledFlights WHERE ID= NEW.ID;
-SET @dist = SELECT calculate_distance(@start,@dest);
-UPDATE CustomerProfiles SET milesTravelled = milesTravelled + @dist WHERE ID IN (SELECT CustomerID FROM Tickets WHERE flightID= New.ID);
+SET start = (SELECT Start FROM Scheduled_flight WHERE ID= NEW.ID);
+SET dest = (SELECT Dest FROM Scheduled_flight WHERE ID= NEW.ID);
+SET dist = (SELECT calculate_distance(@start,@dest));
+UPDATE Customer_profile SET MilesTravelled = MilesTravelled + @dist WHERE ID IN (SELECT CustomerID FROM Ticket WHERE FlightID= New.ID);
 
 END IF;
 END; //
@@ -42,30 +28,137 @@ CREATE TRIGGER increase_price
 AFTER INSERT ON Booking  
 FOR EACH ROW 
 BEGIN 
-UPDATE ScheduledFlights SET Price = Price + 100 WHERE ID IN (SELECT flightID FROM Tickets WHERE BookingID= New.ID);
+UPDATE Scheduled_flight SET Price = Price + 100 WHERE ID IN (SELECT FlightID FROM Ticket WHERE BookingID= New.ID);
 
 END; //
 
 CREATE TRIGGER check_seat_availability 
-BEFORE INSERT ON Tickets  
+BEFORE INSERT ON Ticket  
 FOR EACH ROW  
 BEGIN 
- IF (SELECT COUNT(*) FROM tickets WHERE SeatID= NEW.SeatID and flightID= NEW.flightID)>0 THEN 
+ IF (SELECT COUNT(*) FROM Ticket WHERE SeatID= NEW.SeatID and FlightID= NEW.FlightID)>0 THEN 
 SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot book this ticket';
   END IF;
 END; //
 
 CREATE TRIGGER check_seat_limit 
-BEFORE INSERT ON Seats  
+BEFORE INSERT ON Seat  
 FOR EACH ROW  
 BEGIN 
- IF (SELECT COUNT(*) FROM Seats WHERE planeId= NEW.PlaneId and class= NEW.class)>( CASE NEW.class 
-WHEN 'Bussiness' THEN (SELECT Business FROM Model WHERE ID=(SELECT Model FROM Planes WHERE ID=NEW.planeId));
-WHEN 'Economy' THEN (SELECT Economy FROM Model WHERE ID=(SELECT Model FROM Planes WHERE ID=NEW.planeId));
-WHEN 'FirstClass' THEN (SELECT FirstClass FROM Model WHERE ID=(SELECT Model FROM Planes WHERE ID=NEW.planeId));
-END;
+ IF (SELECT COUNT(*) FROM Seat WHERE PlaneID= NEW.PlaneID and Class= NEW.Class)>( CASE NEW.Class 
+WHEN 'Bussiness' THEN (SELECT Business FROM Model WHERE ID=(SELECT Model FROM Plane WHERE ID=NEW.PlaneID))
+WHEN 'Economy' THEN (SELECT Economy FROM Model WHERE ID=(SELECT Model FROM Plane WHERE ID=NEW.PlaneID))
+WHEN 'FirstClass' THEN (SELECT FirstClass FROM Model WHERE ID=(SELECT Model FROM Plane WHERE ID=NEW.PlaneID))
+END
 ) THEN 
-SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot book this ticket';
+SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'Cannot book this ticket';
   END IF;
 END; //
 
+delimiter //
+
+create trigger check_Employee_phone_Number
+before insert on Employee
+for each row
+begin
+if (!Valid_Phone_Number(new.PhoneNo))
+then 
+begin 
+SIGNAL SQLSTATE VALUE '45000'
+SET MESSAGE_TEXT = 'Please enter a valid phone number';
+end;
+end if;
+end;
+//
+delimiter ;
+
+delimiter //
+create trigger check_Customer_phone_Number
+before insert on Customer_profile
+for each row
+begin
+if (!Valid_Phone_Number(new.PhoneNo))
+then 
+begin 
+SIGNAL SQLSTATE VALUE '45000'
+SET MESSAGE_TEXT = 'Please enter a valid phone number';
+end;
+end if;
+end;
+//
+delimiter ;
+
+create trigger check_Customer_phone_Number_Extra
+before insert on Customer_phone_nos
+for each row
+begin
+if (!Valid_Phone_Number(new.PhoneNo))
+then 
+begin 
+SIGNAL SQLSTATE VALUE '45000'
+SET MESSAGE_TEXT = 'Please enter a valid phone number';
+end;
+end if;
+end;
+//
+delimiter ;
+
+delimiter //
+create trigger CargoLimit 
+before insert on Cargo
+for each row
+begin
+set @TotalWeight = (select sum(Weight) from Cargo where FlightID = new.FlightID);
+set @TotalWeight = (@TotalWeight + new.Weight);
+set @Cargolimit = (select CargoLimit from Model where ID = (select Model from Plane, Scheduled_flight where Plane.ID = Scheduled_flight.PlaneID and Scheduled_flight.ID = new.FlightID));
+if @TotalWeight > @Cargolimit
+then
+begin
+SIGNAL SQLSTATE VALUE '45000'
+SET MESSAGE_TEXT = 'Cargo Limit exceeded';
+end;
+end if;
+end;
+//
+
+delimiter ;
+
+delimiter //
+create trigger check_Customer_Password
+before insert on Customer_profile
+for each row
+begin
+set @Validity = Valid_Password(new.Password)
+case
+when @Validity = 1 then begin 
+SIGNAL SQLSTATE VALUE '45000'
+SET MESSAGE_TEXT = 'Please enter a password having a number';
+end;
+when @Validity > 0 then begin 
+SIGNAL SQLSTATE VALUE '45000'
+SET MESSAGE_TEXT = CONCAT('Please enter a password of length', @Validity);
+end;
+end case;
+end;
+//
+delimiter ;
+
+delimiter //
+create trigger check_Employee_Password
+before insert on Employee
+for each row
+begin
+set @Validity = Valid_Password(new.Password);
+case
+when @Validity = 1 then begin 
+SIGNAL SQLSTATE VALUE '45000'
+SET MESSAGE_TEXT = 'Please enter a password having a number';
+end;
+when @Validity > 0 then begin 
+SIGNAL SQLSTATE VALUE '45000'
+SET MESSAGE_TEXT = 'Please enter a valid password';
+end;
+end case;
+end;
+//
+delimiter ;
