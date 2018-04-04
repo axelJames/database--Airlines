@@ -2,7 +2,7 @@ create or replace database Airlines;
 use Airlines;
 create table Employee(
                         ID         int auto_increment  not null,
-                        Password   varchar(30) not null default 'judeBourne',
+                        Password   varchar(30) not null,
                         Name       varchar(30) not null,
                         DOB        date not null,
                         Gender     enum('M', 'F', 'Other') not null,
@@ -169,8 +169,8 @@ create table Scheduled_flight(
                               PlaneID  int,
                               Start    int,
                               Dest     int,
-                              DOD      date not null default '1997-09-21',
-                              DOA      date not null default '1997-09-21',
+                              DOD      date not null, 
+                              DOA      date not null,
                               TOD      time not null,
                               TOA      time not null,
                               Status   enum('CANCELLED', 'ON-TIME', 'DELAYED') default 'ON-TIME',
@@ -189,8 +189,8 @@ create table Scheduled_flight(
 
 create table Commenced_flight(
                                 ID       int not null,
-                                DOD      date not null default '1997-09-21',
-                                DOA      date default '1997-09-21',
+                                DOD      date not null,
+                                DOA      date not null,
                                 TOD      time not null,
                                 TOA      time ,
                                 Status   enum('ON-TIME', 'DELAYED') default 'ON-TIME',
