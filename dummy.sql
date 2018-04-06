@@ -128,9 +128,13 @@ insert into Booking(PaymentID,CustomerID)
       values (4,2);
 
 insert into Ticket(BookingID, FlightID, SeatID, CustomerID) 
-      values (1,1,1,1);
+      values (1,1,4,1);
 insert into Ticket(BookingID, FlightID, SeatID, CustomerID) 
       values (2,2,1,2);
+insert into Ticket(BookingID, FlightID, SeatID, CustomerID) 
+      values (1,2,2,1);
+insert into Ticket(BookingID, FlightID, SeatID, CustomerID) 
+      values (2,2,3,2);
 
 insert into Cargo( FlightID, OwnerID, Weight, Type, BookingID) 
       values (1,2,5,'Luggage',3);

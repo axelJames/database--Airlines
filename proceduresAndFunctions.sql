@@ -104,15 +104,15 @@ create procedure Holiday_bonus (in percent int)
   end;//
 delimiter ;
 
-
+/* */
 delimiter //
-create procedure Get_seat_list (in FlightID int)
+create procedure Get_seat_list (in flight int)
   begin 
-  declare PlaneId int;
-  set PlaneID = (select PlaneID from Scheduled_flight where ID = FlightID);
-  create temporary table Business_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FlightID = FlightID and Status = 'Active') and Class = 'Business';
-  create temporary table FirstClass_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FlightID = FlightID and Status = 'Active') and Class = 'FirstClass';
-  create temporary table Economy_Seat select SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FlightID = FlightID and Status = 'Active') and Class = 'Economy';
+  declare plane int;
+  set plane = (select PlaneID from Scheduled_flight where ID = flight);
+  create or replace temporary table Business_Seat select distinct ID, SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FlightID = flight and Status = 'Active') and Class = 'Business' and Seat.PlaneID = plane;
+  create or replace temporary table FirstClass_Seat select distinct ID, SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FlightID = flight and Status = 'Active') and Class = 'FirstClass' and Seat.PlaneID = plane;
+  create or replace temporary table Economy_Seat select distinct ID, SeatNo from Seat where ID not in (select SeatID from Ticket where Ticket.FlightID = flight and Status = 'Active') and Class = 'Economy' and Seat.PlaneID = plane;
   end;//
 delimiter ;
 
@@ -125,22 +125,22 @@ create procedure Show_eligible_loyalty_programs (in customerID int)
   end;//
 delimiter ;
 
-/* with not supported*/
+/*tested and working */
 delimiter //
-create procedure distance_travelled_since_last_inspection (in PlaneID int,out dist int)
+create function distance_travelled_since_last_inspection (plane int)
+  returns int
+  deterministic
   begin
-  set @lastInspectionDate = (select max(Date) from Inspection where PlaneID = PlaneID);
-  
-  with distances_travelled as ( 
-      select distance_between_Airport(Scheduled_flight.Start, Scheduled_flight.Dest) as distance
-      from Scheduled_flight, Commenced_flight
-      where Scheduled_flight.ID = Commenced_flight.ID and Commenced_flight.DOA >= @lastInspectionDate and Scheduled_flight.PlaneID = PlaneID;
-       )
-       select sum(distance) into dist 
-       from distances_travelled;
+  set @lastInspectionDate = (select max(Date) from Inspection where PlaneID = plane);
+  set @dist = ( select sum(distance)  
+                from (select distance_between_Airport(Scheduled_flight.Start, Scheduled_flight.Dest) as distance
+                      from Scheduled_flight, Commenced_flight
+                      where Scheduled_flight.ID = Commenced_flight.ID and Commenced_flight.DOA >= @lastInspectionDate and Scheduled_flight.PlaneID = PlaneID) as T);
+  return @dist;
   end; //
 delimiter ;
 
+/*tested and working */
 delimiter //
 create procedure Cancel_booking (in ticketID int)
   begin
@@ -151,7 +151,7 @@ create procedure Cancel_booking (in ticketID int)
   set @ticketPrice = (select Price from Ticket where ID = ticketID);
 
   insert into Payment (Amount, Cash, Bank, TransactionID, TimeStamp)
-  values (@ticketPrice * 0.8,'N', 'National Bank of Poor People', 98989898, CURRENT_TIMESTAMP());
+  values (@ticketPrice * 0.8,'N', 'National Bank of Poor People', 98989898, 'Refund', CURRENT_TIMESTAMP());
 
   end;//
 delimiter ;
@@ -189,4 +189,22 @@ create procedure Income_expenditure (out income float, out expediture float, in 
   end;
   end if;
   end;//
+delimiter ;
+
+/*tested and working*/
+delimiter //
+create function update_safety (plane int, threshold int)
+returns int
+deterministic
+begin
+declare validity bool;
+set validity = 1;
+if distance_travelled_since_last_inspection(plane) > threshold then
+begin
+update Plane set Status = 'Needs Inspection' where ID = plane;
+set validity = 0;
+end;
+end if;
+return validity;
+end;//
 delimiter ;

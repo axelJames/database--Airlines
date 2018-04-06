@@ -214,11 +214,14 @@ create table Booking(
                     );
 
 create table Ticket(
+                      ID         int auto_increment not null,
                       BookingID  int not null,
                       FlightID   int not null,
                       SeatID     int not null,
                       CustomerID int not null,
-                      primary key (BookingID, CustomerID),
+                      Price      int unsigned not null,
+                      Status     enum('Active', 'Cancelled', 'Over') default 'Active',
+                      primary key (ID),
                       foreign key (BookingID) references Booking(ID)
                         on delete cascade
                         on update cascade,
@@ -231,8 +234,7 @@ create table Ticket(
                       foreign key (SeatID) references Seat(ID)
                        on delete cascade
                        on update cascade  
-
-                    ); 
+                   ); 
 
 create table Cargo(
                       ID        int auto_increment not null,

@@ -57,7 +57,7 @@ END; //
 
 delimiter //
 
-create trigger check_Employee_phone_Number
+create trigger check_Employee_record_validity
 before insert on Employee
 for each row
 begin
@@ -68,12 +68,25 @@ SIGNAL SQLSTATE VALUE '45000'
 SET MESSAGE_TEXT = 'Please enter a valid phone number';
 end;
 end if;
+set @Validity = Valid_Password(new.Password);
+case
+when @Validity = 1 then begin 
+SIGNAL SQLSTATE VALUE '45000'
+SET MESSAGE_TEXT = 'Please enter a password having a number';
+end;
+when @Validity > 0 then begin 
+SIGNAL SQLSTATE VALUE '45000'
+SET MESSAGE_TEXT = 'Please enter a valid password';
+end;
+end case;
 end;
 //
 delimiter ;
 
+
+
 delimiter //
-create trigger check_Customer_phone_Number
+create trigger check_Customer_record_validity
 before insert on Customer_profile
 for each row
 begin
@@ -84,6 +97,17 @@ SIGNAL SQLSTATE VALUE '45000'
 SET MESSAGE_TEXT = 'Please enter a valid phone number';
 end;
 end if;
+set @Validity = Valid_Password(new.Password);
+case
+when @Validity = 1 then begin 
+SIGNAL SQLSTATE VALUE '45000'
+SET MESSAGE_TEXT = 'Please enter a password having a number';
+end;
+when @Validity > 0 then begin 
+SIGNAL SQLSTATE VALUE '45000'
+SET MESSAGE_TEXT = CONCAT('Please enter a password of length', @Validity);
+end;
+end case;
 end;
 //
 delimiter ;
@@ -123,42 +147,19 @@ end;
 
 delimiter ;
 
+
 delimiter //
-create trigger check_Customer_Password
-before insert on Customer_profile
+create trigger check_safety
+before insert on Scheduled_flight
 for each row
 begin
-set @Validity = Valid_Password(new.Password)
-case
-when @Validity = 1 then begin 
+if update_safety(NEW.PlaneID, 5000) = 0 then
+begin 
 SIGNAL SQLSTATE VALUE '45000'
-SET MESSAGE_TEXT = 'Please enter a password having a number';
+SET MESSAGE_TEXT = 'The Plane is not safe to fly';
 end;
-when @Validity > 0 then begin 
-SIGNAL SQLSTATE VALUE '45000'
-SET MESSAGE_TEXT = CONCAT('Please enter a password of length', @Validity);
-end;
-end case;
+end if;
 end;
 //
 delimiter ;
 
-delimiter //
-create trigger check_Employee_Password
-before insert on Employee
-for each row
-begin
-set @Validity = Valid_Password(new.Password);
-case
-when @Validity = 1 then begin 
-SIGNAL SQLSTATE VALUE '45000'
-SET MESSAGE_TEXT = 'Please enter a password having a number';
-end;
-when @Validity > 0 then begin 
-SIGNAL SQLSTATE VALUE '45000'
-SET MESSAGE_TEXT = 'Please enter a valid password';
-end;
-end case;
-end;
-//
-delimiter ;
