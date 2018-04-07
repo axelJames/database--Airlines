@@ -113,7 +113,7 @@ create table Inspection(
 
 create table Customer_profile(
                                ID               int auto_increment not null,
-                               Password         varchar(30) not null default 'judeBourne'  CHECK (Valid_Password(Password)),
+                               Password         varchar(30) not null default 'judeBourne' CHECK (Valid_Password(Password)),
                                Name             varchar(30) not null,
                                DOB              date not null,
                                Gender           enum('M', 'F', 'Other') not null,
