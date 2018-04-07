@@ -2,12 +2,12 @@ create or replace database Airlines;
 use Airlines;
 create table Employee(
                         ID         int auto_increment  not null,
-                        Password   varchar(30) not null,
+                        Password   varchar(30) not null CHECK (Valid_Password(Password)),
                         Name       varchar(30) not null,
                         DOB        date not null,
                         Gender     enum('M', 'F', 'Other') not null,
                         Address    varchar(30) not null,
-                        PhoneNo    varchar(15) not null,
+                        PhoneNo    varchar(15) not null CHECK (Valid_Phone_Number(PhoneNo)),  
                         Bank       varchar(30) not null,
                         Salary     float not null default 0.0,
                         DOJ        date not null,
@@ -113,12 +113,12 @@ create table Inspection(
 
 create table Customer_profile(
                                ID               int auto_increment not null,
-                               Password         varchar(30) not null default 'judeBourne',
+                               Password         varchar(30) not null default 'judeBourne'  CHECK (Valid_Password(Password)),
                                Name             varchar(30) not null,
                                DOB              date not null,
                                Gender           enum('M', 'F', 'Other') not null,
                                Address          varchar(30) not null,
-                               PhoneNo          varchar(30) not null,
+                               PhoneNo          varchar(30) not null CHECK (Valid_Phone_Number(PhoneNo)),
                                PassportNo       numeric(15, 0),
                                Bank             varchar(30) not null,  
                                MilesTravelled   int not null default 0,
@@ -127,7 +127,7 @@ create table Customer_profile(
 
 create table Customer_phone_nos(
                                 CustomerID int not null,
-                                PhoneNo    varchar(15) not null,
+                                PhoneNo    varchar(15) not null CHECK (Valid_Phone_Number(PhoneNo)),
                                 foreign key(CustomerID) references Customer_profile(ID)
                                );
 
