@@ -1,20 +1,20 @@
 create or replace database Airlines;
 use Airlines;
-create table Employee(
+create or replace table Employee(
                         ID         int auto_increment  not null,
-                        Password   varchar(30) not null CHECK (Valid_Password(Password)),
+                        Password   varchar(30) not null,
                         Name       varchar(30) not null,
                         DOB        date not null,
                         Gender     enum('M', 'F', 'Other') not null,
                         Address    varchar(30) not null,
-                        PhoneNo    varchar(15) not null CHECK (Valid_Phone_Number(PhoneNo)),  
+                        PhoneNo    varchar(15) not null,  
                         Bank       varchar(30) not null,
-                        Salary     float not null default 0.0,
+                        Salary     float not null,
                         DOJ        date not null,
                         primary key(ID)
                     );
 
-create table Technician(
+create or replace table Technician(
                         ID      int not null,
                         AOExp   varchar(30) not null,
                         primary key(ID),
@@ -23,16 +23,16 @@ create table Technician(
                                   On update cascade
                        );
 
-create table Pilot(
+create or replace table Pilot(
                     ID         int not null,
-                    Experience int unsigned not null default 0,
+                    Experience int unsigned not null,
                     primary key(ID),
                     foreign key(ID) references Employee(ID)
                       On delete cascade
                       On update cascade
                    );
 
-create table Other(
+create or replace table Other(
                     ID      int not null,
                     Type    enum('Hostess', 'HR', 'Accounting', 'Administration') not null,
                     primary key(ID),
@@ -41,7 +41,7 @@ create table Other(
                       On update cascade
                    );
 
-create table Manages(
+create or replace table Manages(
                       Manager  int not null,
                       Manages  int not null,
                       primary key (Manager, Manages),
@@ -53,17 +53,17 @@ create table Manages(
                       On update cascade
                      );
 
-create table Airport(
+create or replace table Airport(
                         ID         int auto_increment not null,
-                        Latitude   float not null default 0.0,
-                        Longitude  float not null default 0.0,
+                        Latitude   float not null,
+                        Longitude  float not null,
                         Name       varchar(50) not null,
                         City       varchar(30) not null,
                         Country    varchar(30) not null,
                         primary key (ID)
                     );
 
-create table Model(
+create or replace table Model(
                     ID            int auto_increment not null,
                     Name          varchar(30),
                     Economy       int unsigned not null default 0,
@@ -74,7 +74,7 @@ create table Model(
                     primary key (ID)
                   );
 
-create table Plane(
+create or replacecreate or replacecreate or replace table Plane(
                     ID                 int auto_increment not null,
                     Model              int not null,
                     Inducted_on        Date not null, 
@@ -86,7 +86,7 @@ create table Plane(
 
                   );
 
-create table Seat(
+create or replacecreate or replace table Seat(
                     ID         int auto_increment not null,
                     Class      enum('Business','Economy','FirstClass') not null,
                     SeatNo     varchar(50) not null,
@@ -97,7 +97,7 @@ create table Seat(
                     on update cascade
                  );
 
-create table Inspection(
+create or replace table Inspection(
                         ID          int auto_increment not null,
                         Technician  int not null,
                         PlaneID     int not null,
@@ -111,36 +111,36 @@ create table Inspection(
                             On update cascade
                         );
 
-create table Customer_profile(
+create or replace table Customer_profile(
                                ID               int auto_increment not null,
-                               Password         varchar(30) not null default 'judeBourne' CHECK (Valid_Password(Password)),
+                               Password         varchar(30) not null,
                                Name             varchar(30) not null,
                                DOB              date not null,
                                Gender           enum('M', 'F', 'Other') not null,
                                Address          varchar(30) not null,
-                               PhoneNo          varchar(30) not null CHECK (Valid_Phone_Number(PhoneNo)),
+                               PhoneNo          varchar(30) not null,
                                PassportNo       numeric(15, 0),
                                Bank             varchar(30) not null,  
                                MilesTravelled   int not null default 0,
                                primary key (ID)
                              ); 
 
-create table Customer_phone_nos(
+create or replace table Customer_phone_nos(
                                 CustomerID int not null,
-                                PhoneNo    varchar(15) not null CHECK (Valid_Phone_Number(PhoneNo)),
+                                PhoneNo    varchar(15) not null,
                                 foreign key(CustomerID) references Customer_profile(ID)
                                );
 
-create table Loyalty_type(
+create or replace table Loyalty_type(
                           Program          varchar(30) not null,
                           MinimumMiles     int unsigned default 0,
                           FreeMiles        int unsigned default 0,
                           FoodDiscount     int unsigned default 0,
-                          Status           enum('active','passive'),
+                          Status           enum('active','inactive'),
                           primary key(Program)
                         );
 
-create table Loyalty_profile(
+create or replace table Loyalty_profile(
                              CustomerID       int not null,
                              Program          varchar(30) not null,           
                              FreeMiles        int unsigned not null default 0,
@@ -153,18 +153,18 @@ create table Loyalty_profile(
                              on update cascade
                             );
 
-create table Payment(
+create or replace table Payment(
                       ID            int auto_increment not null,
                       Amount        float(15) default 0.0,
                       Cash          enum('Y', 'N') default 'N',
                       Bank          varchar(30),
                       TransactionID int,
-                      Description   enum('Plane Purchase','Ticket Booking','Cargo Booking','Fuel Purchase','Salary','Insurance','Other'),
+                      Description   enum('Plane Purchase','Ticket Booking','Ticket Refund','Cargo Booking','Fuel Purchase','Salary','Insurance','Other'),
                       TimeStamp     timeStamp not null,
                       primary key(ID)
                      );
 
-create table Scheduled_flight(
+create or replace table Scheduled_flight(
                               ID       int auto_increment not null ,
                               PlaneID  int,
                               Start    int,
@@ -187,7 +187,7 @@ create table Scheduled_flight(
                               on update cascade
                             );
 
-create table Commenced_flight(
+create or replace table Commenced_flight(
                                 ID       int not null,
                                 DOD      date not null,
                                 DOA      date not null,
@@ -200,7 +200,7 @@ create table Commenced_flight(
                                 on update cascade
                               );
 
-create table Booking(
+create or replace table Booking(
                      ID          int auto_increment not null,
                      PaymentID   int not null,
                      CustomerID  int not null,
@@ -213,7 +213,7 @@ create table Booking(
                      on update cascade
                     );
 
-create table Ticket(
+create or replace table Ticket(
                       ID         int auto_increment not null,
                       BookingID  int not null,
                       FlightID   int not null,
@@ -236,11 +236,11 @@ create table Ticket(
                        on update cascade  
                    ); 
 
-create table Cargo(
+create or replace table Cargo(
                       ID        int auto_increment not null,
                       FlightID  int not null,
                       OwnerID   int not null,
-                      Weight    int not null default 0,
+                      Weight    int not null,
                       Type      enum('Animal', 'Mail', 'Luggage'),
                       BookingID int not null,
                       primary key (ID),
@@ -255,7 +255,7 @@ create table Cargo(
                        on update cascade
                     );
 
-create table Crew(
+create or replace table Crew(
                     EmployeeID int not null,
                     FlightID   int not null,
                     primary key (EmployeeID, FlightID),
@@ -268,7 +268,7 @@ create table Crew(
                 );
 
 
-create table Salary_paid( 
+create or replace table Salary_paid( 
                          EmployeeID int not null,
                          PaymentID  int not null,
                          primary key (EmployeeID, PaymentID),

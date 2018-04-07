@@ -1,4 +1,4 @@
-CREATE USER DBA@localhost IDENTIFIED BY 'abc';
+CREATE USER 'DBA'@'localhost' IDENTIFIED BY 'abc';
 CREATE ROLE Administrator;
 GRANT ALL ON Airlines.* TO Administrator;
 GRANT Administrator TO DBA@localhost;

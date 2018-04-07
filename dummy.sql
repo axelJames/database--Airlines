@@ -7,7 +7,11 @@ insert into Employee( Password, Name, DOB, Gender, Address, PhoneNo, Salary, DOJ
 insert into Employee( Password, Name, DOB, Gender, Address, PhoneNo, Salary, DOJ,Bank)
       values ('Bla1234!','Luke Skywalker','1986-06-12','M','Tatooine','919999999997','100000','2010-01-28','SBI');
 insert into Employee( Password, Name, DOB, Gender, Address, PhoneNo, Salary, DOJ,Bank)
-      values ('aaaaaaa','Padme Amidala','1987-06-12','F','Tatooine','91239999aa996','70000','2010-01-28','Canara');
+      values ('aaaa3aaa','Padme Amidala','1987-06-12','F','Tatooine','919999999997','70000','2010-01-28','Canara');
+insert into Employee( Password, Name, DOB, Gender, Address, PhoneNo, Salary, DOJ,Bank)
+      values ('Bla1234!','Yoda','1986-06-12','M','Nowhere','919999999990','100000','2010-01-28','LSF');
+insert into Employee( Password, Name, DOB, Gender, Address, PhoneNo, Salary, DOJ,Bank)
+      values ('aaa222212','Wandu','1987-06-12','F','Everywhere','919999999997','70000','2010-01-28','LSF');
 
 insert into Technician 
       values (1,'Engine');
@@ -43,40 +47,107 @@ insert into Airport( Latitude, Longitude, Name, City,Country)
 
 
 insert into Model (Name, Economy, Business, FirstClass, CargoLimit, Manufacturer) 
-      values ('Boeing 747 8',1,0,1,3000,'Boeing');
+      values ('Boeing 747 8',100,100,100,3000,'Boeing');
 insert into Model (Name, Economy, Business, FirstClass, CargoLimit, Manufacturer) 
-      values ('Boeing 777 200ER',2,0,0,5000,'Boeing');
+      values ('Boeing 777 200ER',12,10,10,5000,'Boeing');
 insert into Model (Name, Economy, Business, FirstClass, CargoLimit, Manufacturer) 
-      values ('Airbus A340 300',1,1,0,10000,'Airbus Industrie');
+      values ('Airbus A340 300',11,11,10,10000,'Airbus');
 insert into Model (Name, Economy, Business, FirstClass, CargoLimit, Manufacturer) 
-      values ('Airbus A340 600',1,0,0,10000,'Airbus Industrie');
+      values ('Airbus A340 600',11,10,10,10000,'Airbus');
 
-insert into Plane( Model, Inducted_on, Status) 
-      values (1,'2011-10-11','Safe');
-insert into Plane( Model, Inducted_on, Status) 
-      values (2,'2011-11-18','Safe');
-insert into Plane( Model, Inducted_on, Status) 
-      values (2,'2013-04-11','Safe');
-insert into Plane( Model, Inducted_on, Status) 
-      values (3,'2014-06-01','Safe');
+insert into Plane( Model, Inducted_on) 
+      values (1,'2011-10-11',);
+insert into Plane( Model, Inducted_on) 
+      values (2,'2011-11-18',);
+insert into Plane( Model, Inducted_on) 
+      values (2,'2013-04-11',);
+insert into Plane( Model, Inducted_on) 
+      values (3,'2014-06-01',);
 
 
 insert into Seat(Class,SeatNo,PlaneID)
       values ('Economy','E1',1);
 insert into Seat(Class,SeatNo,PlaneID)
-      values ('Economy','E1',2);
+      values ('Economy','E2',1);
 insert into Seat(Class,SeatNo,PlaneID)
-      values ('Economy','E1',3);
+      values ('Economy','E3',1);
 insert into Seat(Class,SeatNo,PlaneID)
-      values ('Economy','E1',4);
+      values ('Economy','E4',1);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E5',1);
 insert into Seat(Class,SeatNo,PlaneID)
       values ('Business','B1',1);
 insert into Seat(Class,SeatNo,PlaneID)
+      values ('Business','B2',1);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Business','B3',1);
+insert into Seat(Class,SeatNo,PlaneID)
       values ('FirstClass','F1',1);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('FirstClass','F2',1);
+
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E1',2);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E2',2);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E3',2);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E4',2);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E5',2);
 insert into Seat(Class,SeatNo,PlaneID)
       values ('Business','B1',2);
 insert into Seat(Class,SeatNo,PlaneID)
+      values ('Business','B2',2);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Business','B3',2);
+insert into Seat(Class,SeatNo,PlaneID)
       values ('FirstClass','F1',2);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('FirstClass','F2',2);
+
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E1',3);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E2',3);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E3',3);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E4',3);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E5',3);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Business','B1',3);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Business','B2',3);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Business','B3',3);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('FirstClass','F1',3);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('FirstClass','F2',3);
+
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E1',4);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E2',4);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E3',4);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E4',4);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Economy','E5',4);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Business','B1',4);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Business','B2',4);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('Business','B3',4);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('FirstClass','F1',4);
+insert into Seat(Class,SeatNo,PlaneID)
+      values ('FirstClass','F2',4);
 
 
 insert into Inspection(Technician,PlaneID,Date)

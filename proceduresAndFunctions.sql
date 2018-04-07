@@ -1,13 +1,13 @@
 
 /*tested and working*/
-CREATE FUNCTION check_seat_availability (FID int,cl enum('Business','FirstClass','Economy'))
+create or replace FUNCTION check_seat_availability (FID int,cl enum('Business','FirstClass','Economy'))
     RETURNS INT
     RETURN (SELECT COUNT(*) FROM Seat WHERE ID NOT IN (SELECT SeatID FROM Ticket WHERE FlightID=FID) and Class=cl and PlaneId=(SELECT PlaneID FROM Scheduled_flight WHERE ID=FID)); 
 
 
 /*tested and working*/
 delimiter //
-CREATE PROCEDURE show_flights(IN src int, IN dst int,IN fromDate date,IN toDate date)
+create or replace PROCEDURE show_flights(IN src int, IN dst int,IN fromDate date,IN toDate date)
  BEGIN 
   IF ((fromDate IS NULL) AND (toDate IS NULL)) THEN SELECT * FROM Scheduled_flight WHERE Start=src AND Dest = dst;
   ELSEIF ((toDate IS NOT NULL) and (fromDate IS NULL)) THEN SELECT * FROM Scheduled_flight WHERE Start=src AND Dest = dst AND DOD<= toDate;
@@ -20,7 +20,7 @@ delimiter ;
 
 /*tested and working*/
 delimiter //
-create function Valid_Phone_Number(phNo varchar(15))
+create or replace function Valid_Phone_Number(phNo varchar(15))
 returns bool
 deterministic
 begin
@@ -37,7 +37,7 @@ delimiter ;
 
 /*tested and kinda working*/
 delimiter //
-create function Valid_Password(passwd varchar(30))
+create or replace function Valid_Password(passwd varchar(30))
 returns int
 deterministic
 begin
@@ -47,7 +47,7 @@ set  MinLength = 8;
 set  Validity = 0;
 if char_length(passwd) <  MinLength then
 set  Validity =  MinLength;
-elseif passwd NOT LIKE '%[0-9]%' then
+elseif passwd NOT RLIKE '[0-9]' then
 set  Validity = 1;
 end if;
 return  Validity;
@@ -57,7 +57,7 @@ delimiter ;
 
 /*tested and working*/
 delimiter //
-create function distance_between_Airport (fromPort int, toPort  int)
+create or replace function distance_between_Airport (fromPort int, toPort  int)
   returns int
   deterministic
   begin
@@ -96,7 +96,7 @@ delimiter ;
 
 /*tested and kinda working*/
 delimiter //
-create procedure Holiday_bonus (in percent int)
+create or replace procedure Holiday_bonus (in percent int)
   begin
   create or replace table holiday_bonus as select ID as EmployeeID, (Salary / 100) as Bonus
   from Employee;
@@ -106,7 +106,7 @@ delimiter ;
 
 /* */
 delimiter //
-create procedure Get_seat_list (in flight int)
+create or replace procedure Get_seat_list (in flight int)
   begin 
   declare plane int;
   set plane = (select PlaneID from Scheduled_flight where ID = flight);
@@ -118,7 +118,7 @@ delimiter ;
 
 /*tested and working*/
 delimiter //
-create procedure Show_eligible_loyalty_programs (in customerID int)
+create or replace procedure Show_eligible_loyalty_programs (in customerID int)
   begin 
   set @milesTravelled = (select MilesTravelled from Customer_profile where ID = customerID);
   create or replace temporary table Eligible_programs select * from Loyalty_type where @milesTravelled >= MinimumMiles;
@@ -127,7 +127,7 @@ delimiter ;
 
 /*tested and working */
 delimiter //
-create function distance_travelled_since_last_inspection (plane int)
+create or replace function distance_travelled_since_last_inspection (plane int)
   returns int
   deterministic
   begin
@@ -142,7 +142,7 @@ delimiter ;
 
 /*tested and working */
 delimiter //
-create procedure Cancel_booking (in ticketID int)
+create or replace procedure Cancel_booking (in ticketID int)
   begin
   set @customerID = (select CustomerID from Booking where ID in (select BookingID from Ticket where ID = ticketID));
   update Ticket
@@ -150,15 +150,15 @@ create procedure Cancel_booking (in ticketID int)
   where ID = ticketID;
   set @ticketPrice = (select Price from Ticket where ID = ticketID);
 
-  insert into Payment (Amount, Cash, Bank, TransactionID, TimeStamp)
-  values (@ticketPrice * 0.8,'N', 'National Bank of Poor People', 98989898, 'Refund', CURRENT_TIMESTAMP());
+  insert into Payment (Amount, Cash, Bank, TransactionID, Description, TimeStamp)
+  values (@ticketPrice * 0.8,'N', 'National Bank of Poor People', 98989898, 'Ticket Refund', CURRENT_TIMESTAMP());
 
   end;//
 delimiter ;
 
 /*tested and working*/
 delimiter //
-create procedure Cancel_Cargo (in cargoID int)
+create or replace procedure Cancel_Cargo (in cargoID int)
   begin
   declare customerID int;
   set customerID = (select CustomerID from Booking where ID in (select BookingID from Cargo where ID = cargoID));
@@ -175,7 +175,7 @@ delimiter ;
 
 /*tested and working*/
 delimiter //
-create procedure Income_expenditure (out income float, out expediture float, in fromDate date, in toDate date, in type varchar(30))
+create or replace procedure Income_expenditure (out income float, out expediture float, in fromDate date, in toDate date, in type varchar(30))
   begin
   if type = '' then
   begin
@@ -193,7 +193,7 @@ delimiter ;
 
 /*tested and working*/
 delimiter //
-create function update_safety (plane int, threshold int)
+create or replace function update_safety (plane int, threshold int)
 returns int
 deterministic
 begin
