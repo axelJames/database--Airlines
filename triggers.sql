@@ -68,13 +68,13 @@ SIGNAL SQLSTATE VALUE '45000'
 SET MESSAGE_TEXT = 'Please enter a valid phone number';
 end;
 end if;
-set @Validity = Valid_Password(new.Password);
+set @validity = Valid_Password(new.Password);
 case
-when @Validity = 1 then begin 
+when @validity = 1 then begin 
 SIGNAL SQLSTATE VALUE '45000'
 SET MESSAGE_TEXT = 'Please enter a password having a number';
 end;
-when @Validity > 0 then begin 
+when @validity > 0 then begin 
 SIGNAL SQLSTATE VALUE '45000'
 SET MESSAGE_TEXT = 'Please enter a valid password';
 end;
@@ -97,15 +97,17 @@ SIGNAL SQLSTATE VALUE '45000'
 SET MESSAGE_TEXT = 'Please enter a valid phone number';
 end;
 end if;
-set @Validity = Valid_Password(new.Password);
+set @validity = Valid_Password(new.Password);
 case
-when @Validity = 1 then begin 
+when @validity = 1 then 
+begin 
 SIGNAL SQLSTATE VALUE '45000'
 SET MESSAGE_TEXT = 'Please enter a password having a number';
 end;
-when @Validity > 0 then begin 
+when @validity > 0 then
+begin 
 SIGNAL SQLSTATE VALUE '45000'
-SET MESSAGE_TEXT = CONCAT('Please enter a password of length', @Validity);
+SET MESSAGE_TEXT = 'Please enter a password of length';
 end;
 end case;
 end;
